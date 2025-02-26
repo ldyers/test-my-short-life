@@ -46,36 +46,33 @@ while True:
                     chat.SendMsg(confirm_msg)
 
                     # 等待用户确认
-                    time.sleep(30)  # 等待30秒获取回复
+                    time.sleep(15)  # 等待30秒获取回复
                     confirm_msgs = wx.GetListenMessage()
                     should_write = True  # 默认30秒无回复时写入
 
                     # 检查确认回复
-                    has_reply = False
                     for confirm_chat in confirm_msgs:
                         if confirm_chat.who == who:
                             has_reply = True
-                            confirm_content = confirm_msgs.get(confirm_chat)[0].content
+                            confirm_content = confirm_msgs.get(confirm_chat)[-1].content
                             # 检查否定回复
                             if confirm_content in ['不确认', '0']:
                                 should_write = False
                                 chat.SendMsg('已取消本次写入')
                                 break
-                            # 检查肯定回复    
+                            # 检查肯定回复
                             elif confirm_content in ['确认', '1']:
                                 should_write = True
                                 break
 
                     # 写入数据库
                     db = Database()
-                    if (not has_reply) or should_write:
+                    if should_write:
                         db.insert_data(name, number, prace)
-                        if not has_reply:
-                            chat.SendMsg('30秒内未收到回复,已自动写入数据库')
-                        elif confirm_content in ['确认', '1', 'yes', 'ok', '是', '好', '好的', '可以']:
+                        if confirm_content in ['确认', '1', 'yes', 'ok', '是', '好', '好的', '可以']:
                             chat.SendMsg('已确认并写入数据库')
                         else:
-                            chat.SendMsg('数据已写入数据库')
+                            chat.SendMsg('30秒内未收到回复,已自动写入数据库')
 
                     # 获取并发送数据总结
                     all_data = db.get_all_data()
